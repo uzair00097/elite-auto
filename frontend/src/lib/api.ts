@@ -62,6 +62,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     } catch {
       // ignore non-JSON error bodies
     }
+
+    // Only an authenticated request (one that carried a token) failing with 401 means the
+    // session itself is invalid/expired — a bare login attempt with wrong credentials also
+    // returns 401 but never carries a token, so it's excluded here.
+    if (res.status === 401 && token && typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      if (!window.location.pathname.startsWith("/login")) {
+        // This is a plain utility module outside React's tree — no useRouter() available here.
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.href = "/login?expired=1";
+      }
+    }
+
     throw new ApiError(res.status, detail);
   }
 
