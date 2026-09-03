@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 from enum import Enum
 
 from pgvector.sqlalchemy import Vector
-from sqlmodel import Column, Field, SQLModel
+from sqlalchemy import ForeignKey
+from sqlmodel import Column, Field, Integer, SQLModel
 
 EMBEDDING_DIM = 384  # sentence-transformers/all-MiniLM-L6-v2
 
@@ -62,7 +63,9 @@ class VehicleImage(SQLModel, table=True):
     __tablename__ = "vehicle_images"
 
     id: int | None = Field(default=None, primary_key=True)
-    vehicle_id: int = Field(foreign_key="vehicles.id", index=True)
+    vehicle_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("vehicles.id", ondelete="CASCADE"), index=True)
+    )
     image_url: str
     is_primary: bool = Field(default=False)
     sort_order: int = Field(default=0)
@@ -72,7 +75,9 @@ class VehicleEmbedding(SQLModel, table=True):
     __tablename__ = "vehicle_embeddings"
 
     id: int | None = Field(default=None, primary_key=True)
-    vehicle_id: int = Field(foreign_key="vehicles.id", unique=True, index=True)
+    vehicle_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("vehicles.id", ondelete="CASCADE"), unique=True, index=True)
+    )
     embedding: list[float] = Field(sa_column=Column(Vector(EMBEDDING_DIM)))
 
 
@@ -81,4 +86,6 @@ class Favorite(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
-    vehicle_id: int = Field(foreign_key="vehicles.id", index=True)
+    vehicle_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("vehicles.id", ondelete="CASCADE"), index=True)
+    )
