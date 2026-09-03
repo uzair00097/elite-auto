@@ -11,12 +11,46 @@ function formatPrice(price: number) {
   return `PKR ${price.toLocaleString()}`;
 }
 
+const BOOST_STORAGE_KEY = "elite-auto-boosted-listings";
+
+function loadBoostedIds(): Set<number> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(BOOST_STORAGE_KEY);
+    return new Set(raw ? (JSON.parse(raw) as number[]) : []);
+  } catch {
+    return new Set();
+  }
+}
+
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [boostedIds, setBoostedIds] = useState<Set<number>>(new Set());
+  const [boostNotice, setBoostNotice] = useState<number | null>(null);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setBoostedIds(loadBoostedIds());
+  }, []);
+
+  const toggleBoost = (vehicleId: number) => {
+    setBoostedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(vehicleId)) {
+        next.delete(vehicleId);
+      } else {
+        next.add(vehicleId);
+        setBoostNotice(vehicleId);
+        setTimeout(() => setBoostNotice((cur) => (cur === vehicleId ? null : cur)), 3000);
+      }
+      localStorage.setItem(BOOST_STORAGE_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!loading && !user) router.push("/login");
@@ -95,34 +129,56 @@ export default function DashboardPage() {
             return (
               <div
                 key={v.id}
-                className="flex items-center gap-4 rounded-xl border border-slate-200 bg-white p-3 shadow-sm"
+                className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm sm:flex-row sm:items-center"
               >
-                <div className="h-16 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
-                  {primaryImage ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={primaryImage.image_url} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[10px] text-slate-400">
-                      No photo
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <div className="h-16 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                    {primaryImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={primaryImage.image_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-[10px] text-slate-400">
+                        No photo
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/vehicles/${v.id}`} className="truncate font-medium text-slate-900 hover:text-blue-700">
+                      {v.title}
+                    </Link>
+                    <div className="mt-1 flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-slate-900">{formatPrice(v.price)}</span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
+                          v.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {v.status}
+                      </span>
+                      {boostedIds.has(v.id) && (
+                        <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          🚀 Boosted
+                        </span>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <Link href={`/vehicles/${v.id}`} className="truncate font-medium text-slate-900 hover:text-blue-700">
-                    {v.title}
-                  </Link>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-900">{formatPrice(v.price)}</span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${
-                        v.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {v.status}
-                    </span>
+                    {boostNotice === v.id && (
+                      <p className="mt-1 text-xs text-amber-600">
+                        Boosted! (Demo only — no real payment was processed.)
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="flex flex-shrink-0 gap-2">
+                <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
+                  <button
+                    onClick={() => toggleBoost(v.id)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
+                      boostedIds.has(v.id)
+                        ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
+                        : "border-slate-300 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    {boostedIds.has(v.id) ? "Un-boost" : "🚀 Boost"}
+                  </button>
                   <button
                     onClick={() => toggleSold(v)}
                     className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
