@@ -26,6 +26,7 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
   const [error, setError] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [similar, setSimilar] = useState<Vehicle[]>([]);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -40,6 +41,19 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
       .then((res) => setSimilar(res.items))
       .catch(() => setSimilar([]));
   }, [id]);
+
+  const imageCount = vehicle?.images.length ?? 0;
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxOpen(false);
+      else if (e.key === "ArrowRight") setActiveImage((i) => (i + 1) % imageCount);
+      else if (e.key === "ArrowLeft") setActiveImage((i) => (i - 1 + imageCount) % imageCount);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxOpen, imageCount]);
 
   if (loading) {
     return (
@@ -87,14 +101,32 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
 
       <div className="grid gap-8 md:grid-cols-5">
         <div className="md:col-span-3">
-          <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100 shadow-sm">
+          <div
+            className={`group relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100 shadow-sm ${
+              images.length > 0 ? "cursor-zoom-in" : ""
+            }`}
+            onClick={() => images.length > 0 && setLightboxOpen(true)}
+          >
             {images.length > 0 ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={images[activeImage].image_url}
-                alt={vehicle.title}
-                className="h-full w-full object-cover"
-              />
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={images[activeImage].image_url}
+                  alt={vehicle.title}
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                />
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/10">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white/0 text-white opacity-0 shadow-sm transition group-hover:bg-white/90 group-hover:text-slate-700 group-hover:opacity-100">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16zM11 8v6M8 11h6"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              </>
             ) : (
               <NoPhotoPlaceholder category={vehicle.category} />
             )}
@@ -187,6 +219,66 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </div>
+
+      {lightboxOpen && images.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Close"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 active:scale-[0.95]"
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImage((i) => (i - 1 + images.length) % images.length);
+                }}
+                aria-label="Previous image"
+                className="absolute left-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 active:scale-[0.95] sm:left-4"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveImage((i) => (i + 1) % images.length);
+                }}
+                aria-label="Next image"
+                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 active:scale-[0.95] sm:right-4"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </>
+          )}
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={images[activeImage].image_url}
+            alt={vehicle.title}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[85vh] max-w-full rounded-lg object-contain shadow-2xl"
+          />
+
+          {images.length > 1 && (
+            <span className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-xs font-medium text-white">
+              {activeImage + 1} / {images.length}
+            </span>
+          )}
+        </div>
+      )}
 
       {similar.length > 0 && (
         <div className="mt-12">
