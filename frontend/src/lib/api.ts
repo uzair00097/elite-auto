@@ -148,6 +148,9 @@ export const api = {
     request<Vehicle>(`/vehicles/${id}/images?image_url=${encodeURIComponent(imageUrl)}&is_primary=${isPrimary}`, {
       method: "POST",
     }),
+
+  sendFeedback: (payload: { message: string; email?: string }) =>
+    request<{ id: number }>("/feedback", { method: "POST", body: JSON.stringify(payload) }),
 };
 
 export { ApiError };

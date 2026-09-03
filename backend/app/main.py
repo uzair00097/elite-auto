@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth, search, uploads, vehicles
+from app.api.routes import auth, feedback, search, uploads, vehicles
 from app.core.config import settings
 from app.core.embeddings import get_model
 
@@ -28,6 +28,7 @@ app.include_router(auth.router)
 app.include_router(vehicles.router)
 app.include_router(uploads.router)
 app.include_router(search.router)
+app.include_router(feedback.router)
 
 
 @app.get("/health")
