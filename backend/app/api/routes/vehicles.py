@@ -131,7 +131,11 @@ def list_vehicles(
 
     total = session.exec(select(func.count()).select_from(query.subquery())).one()
 
-    query = query.order_by(Vehicle.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+    query = (
+        query.order_by(Vehicle.boosted.desc(), Vehicle.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
     vehicles = session.exec(query).all()
 
     return VehicleListResponse(total=total, items=to_response_many(vehicles, session))

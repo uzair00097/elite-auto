@@ -17,6 +17,7 @@ export type Vehicle = {
   condition: "excellent" | "good" | "fair";
   description: string;
   status: "active" | "sold";
+  boosted: boolean;
   created_at: string;
   images: { id: number; image_url: string; is_primary: boolean; sort_order: number }[];
   seller_name: string;

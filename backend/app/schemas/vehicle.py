@@ -28,6 +28,7 @@ class VehicleUpdate(BaseModel):
     condition: Condition | None = None
     description: str | None = None
     status: VehicleStatus | None = None
+    boosted: bool | None = None
 
 
 class VehicleImageResponse(BaseModel):
@@ -56,6 +57,7 @@ class VehicleResponse(BaseModel):
     condition: Condition
     description: str
     status: VehicleStatus
+    boosted: bool
     created_at: datetime
     images: list[VehicleImageResponse] = []
     seller_name: str

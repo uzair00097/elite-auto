@@ -56,6 +56,7 @@ class Vehicle(SQLModel, table=True):
     condition: Condition
     description: str
     status: VehicleStatus = Field(default=VehicleStatus.active, index=True)
+    boosted: bool = Field(default=False, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 

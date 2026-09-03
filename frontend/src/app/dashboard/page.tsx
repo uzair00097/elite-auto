@@ -11,45 +11,21 @@ function formatPrice(price: number) {
   return `PKR ${price.toLocaleString()}`;
 }
 
-const BOOST_STORAGE_KEY = "elite-auto-boosted-listings";
-
-function loadBoostedIds(): Set<number> {
-  if (typeof window === "undefined") return new Set();
-  try {
-    const raw = localStorage.getItem(BOOST_STORAGE_KEY);
-    return new Set(raw ? (JSON.parse(raw) as number[]) : []);
-  } catch {
-    return new Set();
-  }
-}
-
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [listLoading, setListLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [boostedIds, setBoostedIds] = useState<Set<number>>(new Set());
   const [boostNotice, setBoostNotice] = useState<number | null>(null);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setBoostedIds(loadBoostedIds());
-  }, []);
-
-  const toggleBoost = (vehicleId: number) => {
-    setBoostedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(vehicleId)) {
-        next.delete(vehicleId);
-      } else {
-        next.add(vehicleId);
-        setBoostNotice(vehicleId);
-        setTimeout(() => setBoostNotice((cur) => (cur === vehicleId ? null : cur)), 3000);
-      }
-      localStorage.setItem(BOOST_STORAGE_KEY, JSON.stringify([...next]));
-      return next;
-    });
+  const toggleBoost = async (v: Vehicle) => {
+    const updated = await api.updateVehicle(v.id, { boosted: !v.boosted });
+    setVehicles((prev) => prev.map((x) => (x.id === v.id ? updated : x)));
+    if (updated.boosted) {
+      setBoostNotice(v.id);
+      setTimeout(() => setBoostNotice((cur) => (cur === v.id ? null : cur)), 3000);
+    }
   };
 
   useEffect(() => {
@@ -93,14 +69,14 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-4xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-slate-900">My Listings</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">My Listings</h1>
             <p className="mt-0.5 text-sm text-slate-500">
               {listLoading ? "Loading…" : `${vehicles.length} listing${vehicles.length === 1 ? "" : "s"}`}
             </p>
           </div>
           <Link
             href="/sell"
-            className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+            className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98]"
           >
             + New listing
           </Link>
@@ -109,7 +85,7 @@ export default function DashboardPage() {
         {listLoading && (
           <div className="mt-6 space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-20 animate-pulse rounded-xl border border-slate-200 bg-white" />
+              <div key={i} className="skeleton h-20 rounded-xl border border-slate-200" />
             ))}
           </div>
         )}
@@ -155,7 +131,7 @@ export default function DashboardPage() {
                       >
                         {v.status}
                       </span>
-                      {boostedIds.has(v.id) && (
+                      {v.boosted && (
                         <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
                           🚀 Boosted
                         </span>
@@ -170,24 +146,24 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 sm:flex-shrink-0">
                   <button
-                    onClick={() => toggleBoost(v.id)}
-                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
-                      boostedIds.has(v.id)
+                    onClick={() => toggleBoost(v)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition active:scale-[0.98] ${
+                      v.boosted
                         ? "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100"
                         : "border-slate-300 text-slate-700 hover:bg-slate-50"
                     }`}
                   >
-                    {boostedIds.has(v.id) ? "Un-boost" : "🚀 Boost"}
+                    {v.boosted ? "Un-boost" : "🚀 Boost"}
                   </button>
                   <button
                     onClick={() => toggleSold(v)}
-                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 active:scale-[0.98]"
                   >
                     Mark {v.status === "active" ? "sold" : "active"}
                   </button>
                   <button
                     onClick={() => remove(v)}
-                    className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                    className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition hover:bg-red-50 active:scale-[0.98]"
                   >
                     Delete
                   </button>
