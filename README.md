@@ -4,7 +4,7 @@
 
 🔗 **Live demo:** _coming soon — deployment in progress_
 
-> Portfolio project built to demonstrate full-stack engineering — not a real business. No real payments, no real dealer verification, scoped for a focused hiring-manager review rather than production launch.
+> A personal project by [Muhammad Uzair](https://github.com/uzair00097) — a genuinely functional vehicle marketplace, not a scripted demo. Real seller phone numbers, real phone verification, and real listing data. Not a commercial business: no payment processing and no government ID verification are implemented (see "Known limitations" below).
 
 ![Semantic search demo — typing "fuel efficient bike for daily commute" and getting correctly-ranked motorcycle results](./docs/semantic-search-demo.gif)
 
@@ -58,9 +58,9 @@ flowchart LR
 
 **Postgres + pgvector over a dedicated vector DB (Pinecone, Weaviate)** — the entire dataset is small enough that a dedicated vector store would be pure operational overhead. Keeping embeddings in the same database as the relational data means a single query can join a vector similarity search with normal `WHERE` filters, which is exactly what hybrid search needs.
 
-**Local embedding model over OpenAI's API** — this was a deliberate trade-off, not a default. OpenAI's `text-embedding-3-small` would likely rank results more accurately, particularly for car body-type semantics (see "Known limitations" below). Using a free local model instead removes an external dependency, a billing requirement, and a network round-trip from every search request, at the cost of some ranking precision. For a demo-scale dataset (~30 listings) that trade-off is worth it; swapping in OpenAI embeddings later is a small, isolated change (see `app/core/embeddings.py`).
+**Local embedding model over OpenAI's API** — this was a deliberate trade-off, not a default. OpenAI's `text-embedding-3-small` would likely rank results more accurately, particularly for car body-type semantics (see "Known limitations" below). Using a free local model instead removes an external dependency, a billing requirement, and a network round-trip from every search request, at the cost of some ranking precision. For a dataset this size (~30 listings) that trade-off is worth it; swapping in OpenAI embeddings later is a small, isolated change (see `app/core/embeddings.py`).
 
-**Cloudinary over self-hosted storage** — signed direct-to-browser uploads mean the FastAPI server never touches image bytes, which keeps the backend stateless and avoids provisioning object storage for a demo project.
+**Cloudinary over self-hosted storage** — signed direct-to-browser uploads mean the FastAPI server never touches image bytes, which keeps the backend stateless and avoids provisioning object storage for a solo-built project.
 
 ## Known limitations
 
@@ -116,4 +116,4 @@ Visit `http://localhost:3000`.
 
 ---
 
-Built solo over ~2–3 weeks as a portfolio project. See [`elite-auto-project-plan.md`](./elite-auto-project-plan.md) for the original scoping and week-by-week plan.
+Built solo by Muhammad Uzair. See [`elite-auto-project-plan.md`](./elite-auto-project-plan.md) for the original scoping and week-by-week plan.
