@@ -1,9 +1,9 @@
 import re
 
 from fastapi import APIRouter, Depends, Query
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
-from app.api.routes.vehicles import to_response
+from app.api.routes.vehicles import to_response_many
 from app.core.embeddings import embed_text
 from app.db.session import get_session
 from app.models.vehicle import Vehicle, VehicleCategory, VehicleEmbedding, VehicleStatus
@@ -73,12 +73,15 @@ def semantic_search(
     if max_price is not None:
         stmt = stmt.where(Vehicle.price <= max_price)
 
-    stmt = stmt.order_by(VehicleEmbedding.embedding.cosine_distance(query_embedding))
+    # Count against the filtered-but-unordered query so we don't pay for cosine-distance
+    # computation just to get a row count.
+    total = session.exec(select(func.count()).select_from(stmt.subquery())).one()
 
-    all_matches = session.exec(stmt).all()
-    total = len(all_matches)
-
-    page_stmt = stmt.offset((page - 1) * page_size).limit(page_size)
+    page_stmt = (
+        stmt.order_by(VehicleEmbedding.embedding.cosine_distance(query_embedding))
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
     vehicles = session.exec(page_stmt).all()
 
-    return VehicleListResponse(total=total, items=[to_response(v, session) for v in vehicles])
+    return VehicleListResponse(total=total, items=to_response_many(vehicles, session))

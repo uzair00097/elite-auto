@@ -2,7 +2,7 @@ import re
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 
 from app.api.deps import get_current_user
 from app.core.embeddings import embed_vehicle
@@ -38,20 +38,47 @@ def upsert_embedding(vehicle: Vehicle, session: Session) -> None:
     session.commit()
 
 
-def to_response(vehicle: Vehicle, session: Session) -> VehicleResponse:
+def to_response_many(vehicles: list[Vehicle], session: Session) -> list[VehicleResponse]:
+    """Batch-builds responses for a list of vehicles with exactly 2 extra queries total
+    (all images + all sellers), instead of 2 queries per vehicle (N+1)."""
+    if not vehicles:
+        return []
+
+    vehicle_ids = [v.id for v in vehicles]
+    seller_ids = list({v.seller_id for v in vehicles})
+
     images = session.exec(
         select(VehicleImage)
-        .where(VehicleImage.vehicle_id == vehicle.id)
+        .where(VehicleImage.vehicle_id.in_(vehicle_ids))
         .order_by(VehicleImage.sort_order)
     ).all()
-    seller = session.get(User, vehicle.seller_id)
-    return VehicleResponse(
-        **vehicle.model_dump(),
-        images=[VehicleImageResponse.model_validate(img) for img in images],
-        seller_name=seller.name if seller else "Unknown seller",
-        seller_phone=seller.phone if seller else None,
-        seller_verified=bool(seller and seller.phone_verified),
-    )
+    images_by_vehicle: dict[int, list[VehicleImage]] = {}
+    for img in images:
+        images_by_vehicle.setdefault(img.vehicle_id, []).append(img)
+
+    sellers = session.exec(select(User).where(User.id.in_(seller_ids))).all()
+    sellers_by_id = {s.id: s for s in sellers}
+
+    responses = []
+    for vehicle in vehicles:
+        seller = sellers_by_id.get(vehicle.seller_id)
+        responses.append(
+            VehicleResponse(
+                **vehicle.model_dump(),
+                images=[
+                    VehicleImageResponse.model_validate(img)
+                    for img in images_by_vehicle.get(vehicle.id, [])
+                ],
+                seller_name=seller.name if seller else "Unknown seller",
+                seller_phone=seller.phone if seller else None,
+                seller_verified=bool(seller and seller.phone_verified),
+            )
+        )
+    return responses
+
+
+def to_response(vehicle: Vehicle, session: Session) -> VehicleResponse:
+    return to_response_many([vehicle], session)[0]
 
 
 @router.post("", response_model=VehicleResponse, status_code=201)
@@ -102,13 +129,12 @@ def list_vehicles(
     if max_year is not None:
         query = query.where(Vehicle.year <= max_year)
 
-    all_matches = session.exec(query).all()
-    total = len(all_matches)
+    total = session.exec(select(func.count()).select_from(query.subquery())).one()
 
     query = query.order_by(Vehicle.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
     vehicles = session.exec(query).all()
 
-    return VehicleListResponse(total=total, items=[to_response(v, session) for v in vehicles])
+    return VehicleListResponse(total=total, items=to_response_many(vehicles, session))
 
 
 @router.get("/mine", response_model=VehicleListResponse)
@@ -119,7 +145,7 @@ def list_my_vehicles(
     vehicles = session.exec(
         select(Vehicle).where(Vehicle.seller_id == current_user.id).order_by(Vehicle.created_at.desc())
     ).all()
-    return VehicleListResponse(total=len(vehicles), items=[to_response(v, session) for v in vehicles])
+    return VehicleListResponse(total=len(vehicles), items=to_response_many(vehicles, session))
 
 
 @router.get("/{vehicle_id}", response_model=VehicleResponse)
@@ -152,7 +178,7 @@ def similar_vehicles(vehicle_id: int, limit: int = Query(default=4, ge=1, le=12)
         .limit(limit)
     )
     vehicles = session.exec(stmt).all()
-    return VehicleListResponse(total=len(vehicles), items=[to_response(v, session) for v in vehicles])
+    return VehicleListResponse(total=len(vehicles), items=to_response_many(vehicles, session))
 
 
 def _get_owned_vehicle(vehicle_id: int, current_user: User, session: Session) -> Vehicle:
