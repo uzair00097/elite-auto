@@ -59,7 +59,7 @@ export default function Navbar() {
               </button>
               <Link
                 href="/sell"
-                className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+                className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98]"
               >
                 + Sell a Vehicle
               </Link>
@@ -70,7 +70,7 @@ export default function Navbar() {
               <NavLink href="/login">Log in</NavLink>
               <Link
                 href="/register"
-                className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+                className="rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98]"
               >
                 Sign up
               </Link>
@@ -117,7 +117,7 @@ export default function Navbar() {
               <Link
                 href="/sell"
                 onClick={closeMenu}
-                className="mt-1 rounded-full bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm"
+                className="mt-1 rounded-full bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98]"
               >
                 + Sell a Vehicle
               </Link>
@@ -142,7 +142,7 @@ export default function Navbar() {
               <Link
                 href="/register"
                 onClick={closeMenu}
-                className="mt-1 rounded-full bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm"
+                className="mt-1 rounded-full bg-blue-700 px-4 py-2 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98]"
               >
                 Sign up
               </Link>

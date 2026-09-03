@@ -3,4 +3,20 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-sora);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-slate-100) 25%, var(--color-slate-200) 37%, var(--color-slate-100) 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
 }

@@ -74,7 +74,7 @@ export default function VerifyPhonePage() {
   return (
     <div className="flex min-h-[calc(100vh-57px)] items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">Verify your phone</h1>
+        <h1 className="font-display text-xl font-bold text-slate-900">Verify your phone</h1>
         <p className="mt-1 text-sm text-slate-500">
           We sent a 6-digit code to <span className="font-medium text-slate-700">{user.phone}</span>.
         </p>
@@ -106,7 +106,7 @@ export default function VerifyPhonePage() {
           <button
             type="submit"
             disabled={verifying || code.length !== 6}
-            className="w-full rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50"
+            className="w-full rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
           >
             {verifying ? "Verifying…" : "Verify"}
           </button>

@@ -75,7 +75,7 @@ export default function HomePage() {
             priority
             className="mx-auto mb-6 h-8 w-auto"
           />
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl">
             The smartest way to buy and sell used vehicles in Pakistan
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-base text-slate-300">
@@ -197,12 +197,12 @@ export default function HomePage() {
         {loading && (
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="animate-pulse overflow-hidden rounded-xl border border-slate-200 bg-white">
-                <div className="aspect-[4/3] w-full bg-slate-100" />
+              <div key={i} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <div className="skeleton aspect-[4/3] w-full" />
                 <div className="space-y-2 p-3">
-                  <div className="h-3.5 w-3/4 rounded bg-slate-100" />
-                  <div className="h-4 w-1/2 rounded bg-slate-100" />
-                  <div className="h-3 w-2/3 rounded bg-slate-100" />
+                  <div className="skeleton h-3.5 w-3/4 rounded" />
+                  <div className="skeleton h-4 w-1/2 rounded" />
+                  <div className="skeleton h-3 w-2/3 rounded" />
                 </div>
               </div>
             ))}

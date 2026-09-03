@@ -150,7 +150,7 @@ export default function SellPage() {
   return (
     <div className="min-h-[calc(100vh-57px)] bg-slate-50 px-4 py-10">
       <div className="mx-auto max-w-xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-bold text-slate-900">List a vehicle</h1>
+        <h1 className="font-display text-xl font-bold text-slate-900">List a vehicle</h1>
         <p className="mt-1 text-sm text-slate-500">Reach thousands of buyers across Pakistan.</p>
 
         <div className="mt-6">
@@ -260,7 +260,7 @@ export default function SellPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:opacity-50"
+              className="w-full rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
             >
               {submitting ? "Creating…" : "Continue to photos"}
             </button>
@@ -303,7 +303,7 @@ export default function SellPage() {
 
             <button
               onClick={() => router.push(`/vehicles/${vehicle.id}`)}
-              className="w-full rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800"
+              className="w-full rounded-lg bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 active:scale-[0.98]"
             >
               Done — view listing
             </button>
