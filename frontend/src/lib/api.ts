@@ -19,6 +19,9 @@ export type Vehicle = {
   status: "active" | "sold";
   created_at: string;
   images: { id: number; image_url: string; is_primary: boolean; sort_order: number }[];
+  seller_name: string;
+  seller_phone: string | null;
+  seller_verified: boolean;
 };
 
 export type VehicleListResponse = { total: number; items: Vehicle[] };
@@ -28,6 +31,8 @@ export type User = {
   name: string;
   email: string;
   city: string | null;
+  phone: string | null;
+  phone_verified: boolean;
   is_seller: boolean;
 };
 
@@ -65,7 +70,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  register: (payload: { name: string; email: string; password: string; city?: string }) =>
+  register: (payload: { name: string; email: string; password: string; city?: string; phone: string }) =>
     request<{ access_token: string }>("/auth/register", {
       method: "POST",
       body: JSON.stringify(payload),
@@ -78,6 +83,15 @@ export const api = {
     }),
 
   me: () => request<User>("/auth/me"),
+
+  sendPhoneOtp: () =>
+    request<{ demo_mode: boolean; code: string; expires_in_seconds: number; note: string }>(
+      "/auth/phone/send-otp",
+      { method: "POST" }
+    ),
+
+  verifyPhoneOtp: (code: string) =>
+    request<User>("/auth/phone/verify-otp", { method: "POST", body: JSON.stringify({ code }) }),
 
   listVehicles: (params: Record<string, string | number | undefined> = {}) => {
     const query = new URLSearchParams();

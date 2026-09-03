@@ -16,14 +16,14 @@ from app.models.user import User
 from app.models.vehicle import Vehicle
 
 SELLERS = [
-    {"name": "Bilal Ahmed", "email": "bilal.ahmed@seed.eliteauto.pk", "city": "Lahore"},
-    {"name": "Sana Malik", "email": "sana.malik@seed.eliteauto.pk", "city": "Karachi"},
-    {"name": "Usman Tariq", "email": "usman.tariq@seed.eliteauto.pk", "city": "Islamabad"},
-    {"name": "Ayesha Raza", "email": "ayesha.raza@seed.eliteauto.pk", "city": "Rawalpindi"},
-    {"name": "Hamza Sheikh", "email": "hamza.sheikh@seed.eliteauto.pk", "city": "Faisalabad"},
-    {"name": "Fatima Noor", "email": "fatima.noor@seed.eliteauto.pk", "city": "Peshawar"},
-    {"name": "Kashif Iqbal", "email": "kashif.iqbal@seed.eliteauto.pk", "city": "Lahore"},
-    {"name": "Zainab Hussain", "email": "zainab.hussain@seed.eliteauto.pk", "city": "Karachi"},
+    {"name": "Bilal Ahmed", "email": "bilal.ahmed@seed.eliteauto.pk", "city": "Lahore", "phone": "03001234567"},
+    {"name": "Sana Malik", "email": "sana.malik@seed.eliteauto.pk", "city": "Karachi", "phone": "03011234567"},
+    {"name": "Usman Tariq", "email": "usman.tariq@seed.eliteauto.pk", "city": "Islamabad", "phone": "03021234567"},
+    {"name": "Ayesha Raza", "email": "ayesha.raza@seed.eliteauto.pk", "city": "Rawalpindi", "phone": "03031234567"},
+    {"name": "Hamza Sheikh", "email": "hamza.sheikh@seed.eliteauto.pk", "city": "Faisalabad", "phone": "03041234567"},
+    {"name": "Fatima Noor", "email": "fatima.noor@seed.eliteauto.pk", "city": "Peshawar", "phone": "03051234567"},
+    {"name": "Kashif Iqbal", "email": "kashif.iqbal@seed.eliteauto.pk", "city": "Lahore", "phone": "03061234567"},
+    {"name": "Zainab Hussain", "email": "zainab.hussain@seed.eliteauto.pk", "city": "Karachi", "phone": "03071234567"},
 ]
 
 SEED_PASSWORD = "SeedSeller123"
@@ -152,6 +152,8 @@ def main():
                 email=seller["email"],
                 password_hash=hash_password(SEED_PASSWORD),
                 city=seller["city"],
+                phone=seller["phone"],
+                phone_verified=True,
                 is_seller=True,
             )
             session.add(user)

@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [city, setCity] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -23,8 +24,8 @@ export default function RegisterPage() {
     setSubmitting(true);
     setError(null);
     try {
-      await register(name, email, password, city || undefined);
-      router.push("/");
+      await register(name, email, password, phone, city || undefined);
+      router.push("/verify-phone");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Registration failed");
     } finally {
@@ -66,6 +67,20 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               className={inputClass}
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700">Phone number</label>
+            <input
+              type="tel"
+              required
+              pattern="03\d{9}"
+              title="Pakistani mobile number, e.g. 03001234567"
+              placeholder="03XXXXXXXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={inputClass}
+            />
+            <p className="mt-1 text-xs text-slate-400">Used for buyers to contact you and for account verification.</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700">City</label>

@@ -58,6 +58,9 @@ class VehicleResponse(BaseModel):
     status: VehicleStatus
     created_at: datetime
     images: list[VehicleImageResponse] = []
+    seller_name: str
+    seller_phone: str | None
+    seller_verified: bool
 
 
 class VehicleListResponse(BaseModel):

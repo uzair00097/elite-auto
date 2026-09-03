@@ -67,12 +67,12 @@ flowchart LR
 - **Car search ranking has real noise.** Motorcycle queries (e.g. "cheap fuel efficient bike for daily commute") rank consistently well. Car queries sometimes surface a mismatched body type — e.g. an SUV or an expensive AWD trim ranking above a more literal match for "small economical car for a student." This traces back to the local embedding model not strongly encoding car body-type semantics (sedan vs. SUV vs. hatchback) the way a larger production model would. The hybrid architecture itself (hard filters before ranking) is correct; the remaining noise is model quality, and was accepted as a scoped trade-off — see "Why these choices" above.
 - **Stock photography, not real vehicle photos.** Seed listings use Unsplash photos matched by make and category, not actual photos of each specific vehicle — a handful are loosely matched (e.g. a car badge close-up instead of the car itself).
 - **Boost Listing is UI-only.** No payment is processed; boosted state is stored in the browser's `localStorage`, not the database.
-- **Seller contact number is a placeholder.** The WhatsApp button links to a fixed placeholder number rather than a real per-seller phone number, since phone collection wasn't in scope.
+- **Phone verification is demo-mode.** Sellers register with a real phone number, used directly in the WhatsApp link on their listings. Verifying it via OTP works end-to-end, but since no paid SMS/WhatsApp Business API provider is configured, the 6-digit code is returned directly in the API response instead of actually being sent — clearly labeled as demo mode in the UI. Swapping in a real provider (e.g. Twilio) means changing one function (`send_phone_otp` in `app/api/routes/auth.py`) without touching the verification logic itself.
 
 ## What I'd add with more time
 
 - Swap in OpenAI (or another production-grade) embedding model behind the same `embed_text()` interface, and re-run the same 5-query eval to measure the actual improvement
-- Real seller phone numbers captured at registration, wired into the WhatsApp link
+- A real SMS/OTP provider behind phone verification
 - Favorites (save/unsave a listing) — schema and scoping were planned but cut for time
 - Multi-role RBAC / admin moderation queue
 - Real payment integration behind the Boost Listing button

@@ -44,9 +44,13 @@ def to_response(vehicle: Vehicle, session: Session) -> VehicleResponse:
         .where(VehicleImage.vehicle_id == vehicle.id)
         .order_by(VehicleImage.sort_order)
     ).all()
+    seller = session.get(User, vehicle.seller_id)
     return VehicleResponse(
         **vehicle.model_dump(),
         images=[VehicleImageResponse.model_validate(img) for img in images],
+        seller_name=seller.name if seller else "Unknown seller",
+        seller_phone=seller.phone if seller else None,
+        seller_verified=bool(seller and seller.phone_verified),
     )
 
 

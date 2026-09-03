@@ -93,6 +93,15 @@ export default function Navbar() {
         </button>
       </div>
 
+      {!loading && user && !user.phone_verified && pathname !== "/verify-phone" && (
+        <div className="border-t border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-800 sm:px-6">
+          Your phone isn&apos;t verified yet.{" "}
+          <Link href="/verify-phone" className="font-medium underline underline-offset-2">
+            Verify now
+          </Link>
+        </div>
+      )}
+
       {menuOpen && (
         <nav className="flex flex-col gap-1 border-t border-slate-200 bg-white px-4 py-3 md:hidden">
           <NavLink href="/" onClick={closeMenu}>
