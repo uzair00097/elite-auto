@@ -13,6 +13,7 @@ from app.schemas.vehicle import (
     VehicleCreate,
     VehicleImageResponse,
     VehicleListResponse,
+    VehicleMakeStat,
     VehicleResponse,
     VehicleUpdate,
 )
@@ -119,7 +120,7 @@ def list_vehicles(
     if city:
         query = query.where(Vehicle.city == city)
     if make:
-        query = query.where(Vehicle.make == make)
+        query = query.where(Vehicle.make.ilike(make))
     if min_price is not None:
         query = query.where(Vehicle.price >= min_price)
     if max_price is not None:
@@ -139,6 +140,30 @@ def list_vehicles(
     vehicles = session.exec(query).all()
 
     return VehicleListResponse(total=total, items=to_response_many(vehicles, session))
+
+
+@router.get("/makes", response_model=list[VehicleMakeStat])
+def list_makes(category: VehicleCategory, session: Session = Depends(get_session)):
+    makes = session.exec(
+        select(Vehicle.make).where(Vehicle.status == VehicleStatus.active, Vehicle.category == category)
+    ).all()
+
+    counts: dict[str, int] = {}
+    casings: dict[str, dict[str, int]] = {}
+    for make in makes:
+        name = make.strip()
+        if not name or name.isdigit():
+            continue
+        key = name.lower()
+        counts[key] = counts.get(key, 0) + 1
+        casings.setdefault(key, {})
+        casings[key][name] = casings[key].get(name, 0) + 1
+
+    stats = [
+        VehicleMakeStat(make=max(casings[key].items(), key=lambda kv: kv[1])[0], count=total)
+        for key, total in counts.items()
+    ]
+    return sorted(stats, key=lambda s: (-s.count, s.make))
 
 
 @router.get("/mine", response_model=VehicleListResponse)

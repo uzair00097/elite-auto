@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { api, type Vehicle } from "@/lib/api";
 import VehicleCard from "@/components/VehicleCard";
+import NoPhotoPlaceholder from "@/components/NoPhotoPlaceholder";
 
 const CITIES = ["Karachi", "Lahore", "Islamabad", "Rawalpindi", "Faisalabad", "Peshawar"];
+
+type CategoryStat = { count: number; image: string | null };
+type MakeStat = { make: string; count: number };
 
 export default function HomePage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -20,6 +24,43 @@ export default function HomePage() {
   const [make, setMake] = useState<string>("");
   const [minPrice, setMinPrice] = useState<string>("");
   const [maxPrice, setMaxPrice] = useState<string>("");
+
+  const [categoryStats, setCategoryStats] = useState<Record<"car" | "motorcycle", CategoryStat> | null>(null);
+  const [makesByCategory, setMakesByCategory] = useState<Record<"car" | "motorcycle", MakeStat[]> | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const pickImage = (v?: Vehicle) => {
+      if (!v) return null;
+      const img = v.images.find((i) => i.is_primary) ?? v.images[0];
+      return img?.image_url ?? null;
+    };
+    Promise.all([api.listVehicles({ category: "car", page_size: 1 }), api.listVehicles({ category: "motorcycle", page_size: 1 })])
+      .then(([cars, bikes]) => {
+        setCategoryStats({
+          car: { count: cars.total, image: pickImage(cars.items[0]) },
+          motorcycle: { count: bikes.total, image: pickImage(bikes.items[0]) },
+        });
+      })
+      .catch(() => {});
+
+    Promise.all([api.listMakes("car"), api.listMakes("motorcycle")])
+      .then(([cars, bikes]) => {
+        setMakesByCategory({ car: cars, motorcycle: bikes });
+      })
+      .catch(() => {});
+  }, []);
+
+  const browseCategory = (value: string) => {
+    setCategory(value);
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const selectBrand = (categoryValue: "car" | "motorcycle", brand: string) => {
+    setCategory(categoryValue);
+    setMake((prev) => (prev.toLowerCase() === brand.toLowerCase() ? "" : brand));
+    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const loadVehicles = async () => {
     setLoading(true);
@@ -136,7 +177,68 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+      {categoryStats && (
+        <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {(
+              [
+                { key: "car", label: "Cars" },
+                { key: "motorcycle", label: "Motorcycles" },
+              ] as const
+            ).map((opt) => {
+              const stat = categoryStats[opt.key];
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => browseCategory(opt.key)}
+                  className="group relative flex h-40 items-end overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 text-left shadow-sm transition hover:shadow-md"
+                >
+                  {stat.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={stat.image}
+                      alt={opt.label}
+                      className="absolute inset-0 h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0">
+                      <NoPhotoPlaceholder category={opt.key} />
+                    </div>
+                  )}
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+                  <div className="relative z-10 p-4">
+                    <p className="font-display text-lg font-semibold text-white">{opt.label}</p>
+                    <p className="text-sm text-slate-200">{stat.count} listings</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {(category === "car" || category === "motorcycle") && makesByCategory && (
+        <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Browse by brand</p>
+          <div className="flex flex-wrap gap-2">
+            {makesByCategory[category].map(({ make: brand, count }) => (
+              <button
+                key={brand}
+                onClick={() => selectBrand(category, brand)}
+                className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
+                  make.toLowerCase() === brand.toLowerCase()
+                    ? "border-blue-600 bg-blue-600 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-blue-300 hover:text-blue-700"
+                }`}
+              >
+                {brand} <span className={make.toLowerCase() === brand.toLowerCase() ? "text-blue-100" : "text-slate-400"}>({count})</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div ref={resultsRef} className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {activeQuery && (
           <div className="mb-4 flex items-center gap-2 text-sm text-slate-600">
             <svg className="h-4 w-4 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

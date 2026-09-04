@@ -67,7 +67,7 @@ def semantic_search(
     if city:
         stmt = stmt.where(Vehicle.city == city)
     if make:
-        stmt = stmt.where(Vehicle.make == make)
+        stmt = stmt.where(Vehicle.make.ilike(make))
     if min_price is not None:
         stmt = stmt.where(Vehicle.price >= min_price)
     if max_price is not None:

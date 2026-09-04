@@ -124,6 +124,9 @@ export const api = {
     return request<VehicleListResponse>(`/search/semantic?${query.toString()}`);
   },
 
+  listMakes: (category: "car" | "motorcycle") =>
+    request<{ make: string; count: number }[]>(`/vehicles/makes?category=${category}`),
+
   getVehicle: (id: number) => request<Vehicle>(`/vehicles/${id}`),
 
   similarVehicles: (id: number) => request<VehicleListResponse>(`/vehicles/${id}/similar`),

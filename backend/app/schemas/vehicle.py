@@ -68,3 +68,8 @@ class VehicleResponse(BaseModel):
 class VehicleListResponse(BaseModel):
     total: int
     items: list[VehicleResponse]
+
+
+class VehicleMakeStat(BaseModel):
+    make: str
+    count: int
