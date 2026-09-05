@@ -2,7 +2,7 @@
 
 **The smartest way to buy and sell used vehicles in Pakistan** — natural language search, verified sellers, and seamless WhatsApp contact.
 
-🔗 **Live demo:** _coming soon — deployment in progress_
+🔗 **Live demo:** [elite-auto-murex.vercel.app](https://elite-auto-murex.vercel.app) (backend: [elite-auto-backend-production.up.railway.app](https://elite-auto-backend-production.up.railway.app))
 
 > A personal project by [Muhammad Uzair](https://github.com/uzair00097) — a genuinely functional vehicle marketplace, not a scripted demo. Real seller phone numbers, real phone verification, and real listing data. Not a commercial business: no payment processing and no government ID verification are implemented (see "Known limitations" below).
 
